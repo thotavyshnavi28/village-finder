@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
+const API = "https://village-finder-backend.onrender.com";
 
 function App() {
   const [states, setStates] = useState([]);
@@ -10,7 +11,7 @@ function App() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/states")
+      .get(`${API}/states`)
       .then((res) => {
         setStates(res.data);
       })
@@ -21,11 +22,7 @@ function App() {
 
   const handleStateChange = async (e) => {
     const stateCode = e.target.value;
-
-    const res = await axios.get(
-      `http://localhost:5000/districts/${stateCode}`
-    );
-
+    const res = await axios.get(`${API}/districts/${stateCode}`);
     setDistricts(res.data);
     setSubdistricts([]);
     setVillages([]);
@@ -33,22 +30,14 @@ function App() {
 
   const handleDistrictChange = async (e) => {
     const districtCode = e.target.value;
-
-    const res = await axios.get(
-      `http://localhost:5000/subdistricts/${districtCode}`
-    );
-
+    const res = await axios.get(`${API}/subdistricts/${districtCode}`);
     setSubdistricts(res.data);
     setVillages([]);
   };
 
   const handleSubdistrictChange = async (e) => {
     const subdistrictCode = e.target.value;
-
-    const res = await axios.get(
-      `http://localhost:5000/villages/${subdistrictCode}`
-    );
-
+    const res = await axios.get(`${API}/villages/${subdistrictCode}`);
     setVillages(res.data);
   };
 
@@ -58,7 +47,6 @@ function App() {
 
       <select onChange={handleStateChange}>
         <option>Select State</option>
-
         {states.map((state) => (
           <option key={state.code} value={state.code}>
             {state.name}
@@ -66,12 +54,10 @@ function App() {
         ))}
       </select>
 
-      <br />
-      <br />
+      <br /><br />
 
       <select onChange={handleDistrictChange}>
         <option>Select District</option>
-
         {districts.map((district) => (
           <option key={district.code} value={district.code}>
             {district.name}
@@ -79,12 +65,10 @@ function App() {
         ))}
       </select>
 
-      <br />
-      <br />
+      <br /><br />
 
       <select onChange={handleSubdistrictChange}>
         <option>Select Subdistrict</option>
-
         {subdistricts.map((subdistrict) => (
           <option key={subdistrict.code} value={subdistrict.code}>
             {subdistrict.name}
@@ -92,12 +76,10 @@ function App() {
         ))}
       </select>
 
-      <br />
-      <br />
+      <br /><br />
 
       <select>
         <option>Select Village</option>
-
         {villages.map((village) => (
           <option key={village.code} value={village.code}>
             {village.name}
@@ -107,12 +89,5 @@ function App() {
     </div>
   );
 }
-<div style={{
-  width: "400px",
-  margin: "50px auto",
-  padding: "20px",
-  border: "1px solid #ccc",
-  borderRadius: "10px"
-}}></div>
 
 export default App;
