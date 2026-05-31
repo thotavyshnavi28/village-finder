@@ -1,90 +1,52 @@
-const express = require("express");
-const mysql = require("mysql2");
-const cors = require("cors");
-require("dotenv").config();
+process.env.SUPABASE_URL = 'https://yyegeaneqfacrlqvhhzr.supabase.co'
+process.env.SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5ZWdlYW5lcWZhY3JscXZoaHpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNzQzNDYsImV4cCI6MjA5NTc1MDM0Nn0.m997yZY-kqFLFmBxuJK9ZlvYgdlzpCM3QdVXb8h_SH4'
 
-const app = express();
+const express = require('express')
+const cors = require('cors')
+const { createClient } = require('@supabase/supabase-js')
 
-app.use(cors());
+const app = express()
+app.use(cors())
+app.use(express.json())
 
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "1028",
-  database: "village_api",
-});
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY)
 
-db.connect((err) => {
-  if (err) {
-    console.log("Database connection failed");
-    console.log(err);
-  } else {
-    console.log("MySQL Connected");
-  }
-});
+// States
+app.get('/states', async (req, res) => {
+  const { data, error } = await supabase.from('states').select('*')
+  if (error) return res.status(500).json({ error })
+  res.json(data)
+})
 
-app.get("/", (req, res) => {
-  res.send("Village API Running");
-});
+// Districts by state
+app.get('/districts/:stateCode', async (req, res) => {
+  const { data, error } = await supabase
+    .from('districts')
+    .select('*')
+    .eq('state_code', req.params.stateCode)
+  if (error) return res.status(500).json({ error })
+  res.json(data)
+})
 
-app.get("/states", (req, res) => {
-  db.query("SELECT * FROM states", (err, result) => {
-    if (err) {
-      res.status(500).json(err);
-    } else {
-      res.json(result);
-    }
-  });
-});
+// Subdistricts by district
+app.get('/subdistricts/:districtCode', async (req, res) => {
+  const { data, error } = await supabase
+    .from('subdistricts')
+    .select('*')
+    .eq('district_code', req.params.districtCode)
+  if (error) return res.status(500).json({ error })
+  res.json(data)
+})
 
-app.get("/districts/:stateCode", (req, res) => {
-  const stateCode = req.params.stateCode;
+// Villages by subdistrict
+app.get('/villages/:subdistrictCode', async (req, res) => {
+  const { data, error } = await supabase
+    .from('villages')
+    .select('*')
+    .eq('subdistrict_code', req.params.subdistrictCode)
+  if (error) return res.status(500).json({ error })
+  res.json(data)
+})
 
-  db.query(
-    "SELECT * FROM districts WHERE state_code = ?",
-    [stateCode],
-    (err, result) => {
-      if (err) {
-        res.status(500).json(err);
-      } else {
-        res.json(result);
-      }
-    }
-  );
-});
-
-app.get("/subdistricts/:districtCode", (req, res) => {
-  const districtCode = req.params.districtCode;
-
-  db.query(
-    "SELECT * FROM subdistricts WHERE district_code = ?",
-    [districtCode],
-    (err, result) => {
-      if (err) {
-        res.status(500).json(err);
-      } else {
-        res.json(result);
-      }
-    }
-  );
-});
-
-app.get("/villages/:subdistrictCode", (req, res) => {
-  const subdistrictCode = req.params.subdistrictCode;
-
-  db.query(
-    "SELECT * FROM villages WHERE subdistrict_code = ?",
-    [subdistrictCode],
-    (err, result) => {
-      if (err) {
-        res.status(500).json(err);
-      } else {
-        res.json(result);
-      }
-    }
-  );
-});
-
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
-});
+const PORT = process.env.PORT || 5000
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
